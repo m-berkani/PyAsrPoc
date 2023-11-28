@@ -1,5 +1,5 @@
-
 import collections, queue
+from tkinter.ttk import _Padding
 import numpy as np
 import pyaudio
 import webrtcvad
@@ -8,6 +8,7 @@ import torch
 import torchaudio
 import whisper
 from whisper.tokenizer import LANGUAGES
+import threading
 
 
 class Audio(object):
@@ -58,7 +59,7 @@ class Audio(object):
         self.stream.stop_stream()
         self.stream.close()
         self.pa.terminate()
-
+        
     frame_duration_ms = property(lambda self: 1000 * self.block_size // self.sample_rate)
 
 
@@ -114,14 +115,13 @@ class VADAudio(Audio):
 
 def main(ARGS):
     # Start audio with VAD
-    vad_audio = VADAudio(aggressiveness=ARGS.webRTC_aggressiveness,
+    vad_audio = VADAudio(aggressiveness=ARGS.webRTC_aggressiveness, 
                          device=ARGS.device,
                          input_rate=ARGS.rate)
-
     print("Listening (ctrl-C to exit)...")
-    frames = vad_audio.vad_collector()
+    frames = vad_audio.vad_collector(padding_ms=20)
+    
     model_size = "tiny"
-    #whisperModel = WhisperModel(model_size, device="cpu", compute_type="int8")
     whisperModel = whisper.load_model(model_size)
 
     # load silero VAD
@@ -129,7 +129,7 @@ def main(ARGS):
     model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
                                     model=ARGS.silaro_model_name,
                                     force_reload= ARGS.reload)
-    (get_speech_timestamp,_,_, _,_) = utils
+    (get_speech_timestamps,save_audio,read_audio,VADIterator,collect_chunks) = utils
 
 
     # Stream from microphone to DeepSpeech using VAD
@@ -137,46 +137,32 @@ def main(ARGS):
     if not ARGS.nospinner:
         spinner = Halo(spinner='line')
     wav_data = bytearray()
+    
     for frame in frames:
         if frame is not None:
             if spinner: spinner.start()
-
             wav_data.extend(frame)
         else:
             if spinner: spinner.stop()
             
             audio = np.frombuffer(wav_data, np.int16).astype(np.float32)*(1/32768.0)
-            time_stamps =get_speech_timestamp(audio, model)
+            time_stamps =get_speech_timestamps(audio, model)
 
             if(len(time_stamps)>0):
-                #print("silero VAD has detected a possible speech")
+                print("#***silero VAD has detected a possible speech")
                 result = whisperModel.transcribe(audio, language="fr")
                 print(result["text"])
-                
-                #segments, info = whisperModel.transcribe(audio, language="fr")
-                #for segment in segments:
-                #    print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
-    
             else:
-                print("silero VAD has detected a noise")
+                print("***silero VAD has detected a noise")
             print()
             wav_data = bytearray()
 
-
-def Int2Float(sound):
-    _sound = np.copy(sound)  #
-    abs_max = np.abs(_sound).max()
-    _sound = _sound.astype('float32')
-    if abs_max > 0:
-        _sound *= 1/abs_max
-    audio_float32 = torch.from_numpy(_sound.squeeze())
-    return audio_float32
 
 if __name__ == '__main__':
     DEFAULT_SAMPLE_RATE = 16000
 
     import argparse
-    parser = argparse.ArgumentParser(description="Stream from microphone to webRTC and silero VAD")
+    parser = argparse.ArgumentParser(description="Stream from microphone to silero VAD")
 
     parser.add_argument('-v', '--webRTC_aggressiveness', type=int, default=3,
                         help="Set aggressiveness of webRTC: an integer between 0 and 3, 0 being the least aggressive about filtering out non-speech, 3 the most aggressive. Default: 3")
