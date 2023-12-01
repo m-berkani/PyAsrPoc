@@ -179,19 +179,10 @@ def online(ARGS):
 
 
 def offline():
-    audio_path = "input.mp3"  # @param {type:"string"}
-    model_size = "medium"  # @param ["medium", "large"]
-    language = "french"  # @param {type:"string"}
-    translation_mode = "No translation"  # @param ["End-to-end Whisper (default)", "Whisper -> DeepL", "No translation"]
-    # @markdown Advanced settings:
-    deepl_authkey = ""  # @param {type:"string"}
-    source_separation = False  # @param {type:"boolean"}
-    vad_threshold = 0.4  # @param {type:"number"}
-    chunk_threshold = 10  # @param {type:"number"}
-    deepl_target_lang = "EN-US"  # @param {type:"string"}
-    max_attempts = 1  # @param {type:"integer"}
-    initial_prompt = ""  # @param {type:"string"}
     
+    vad_threshold = 0.4 
+    chunk_threshold = 10  
+    audio_path = "input.mp3" 
     
     print("Running VAD...")
     model, utils = torch.hub.load(
@@ -254,7 +245,7 @@ def offline():
 
     ##upload to API for transcription
     print("calling the API for transcription")
-    url = "http://localhost:30000/uploadfile"  
+    url = "http://65.21.200.122:30000/uploadfile"  
     file_path = "vad_chunks/0.wav"  # Replace with the path to the file you want to upload
 
     with open(file_path, "rb") as file:
