@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34310.174
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PyAsrPoc", "PyAsrPoc\PyAsrPoc.pyproj", "{2C622CDA-6B57-46CE-88DE-C07E1369EEA0}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "API", "API\API.pyproj", "{7AEB4D02-5372-4CBD-AC39-6175122A9296}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2C622CDA-6B57-46CE-88DE-C07E1369EEA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2C622CDA-6B57-46CE-88DE-C07E1369EEA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AEB4D02-5372-4CBD-AC39-6175122A9296}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AEB4D02-5372-4CBD-AC39-6175122A9296}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

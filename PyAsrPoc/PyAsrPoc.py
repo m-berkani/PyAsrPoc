@@ -1,5 +1,4 @@
 import collections, queue
-from tkinter.ttk import _Padding
 import numpy as np
 import pyaudio
 import webrtcvad
@@ -9,6 +8,12 @@ import torchaudio
 import whisper
 from whisper.tokenizer import LANGUAGES
 import threading
+import wave
+import io
+from base64 import b64decode, b64encode
+from io import BytesIO
+import requests
+
 
 
 class Audio(object):
@@ -113,13 +118,21 @@ class VADAudio(Audio):
                     yield None
                     ring_buffer.clear()
 
-def main(ARGS):
+def int2float(sound):
+    abs_max = np.abs(sound).max()
+    sound = sound.astype('float32')
+    if abs_max > 0:
+        sound *= 1/32768
+    sound = sound.squeeze()
+    return sound
+
+def online(ARGS):
     # Start audio with VAD
     vad_audio = VADAudio(aggressiveness=ARGS.webRTC_aggressiveness, 
                          device=ARGS.device,
                          input_rate=ARGS.rate)
     print("Listening (ctrl-C to exit)...")
-    frames = vad_audio.vad_collector(padding_ms=20)
+    frames = vad_audio.vad_collector()
     
     model_size = "tiny"
     whisperModel = whisper.load_model(model_size)
@@ -145,18 +158,111 @@ def main(ARGS):
         else:
             if spinner: spinner.stop()
             
-            audio = np.frombuffer(wav_data, np.int16).astype(np.float32)*(1/32768.0)
-            time_stamps =get_speech_timestamps(audio, model)
-
+            audio_int16 = np.frombuffer(wav_data, np.int16);
+            audio_float32 = int2float(audio_int16)
+            tens = torch.from_numpy(audio_float32)
+            audio_tens = torch.tensor(audio_float32 )
+            time_stamps =get_speech_timestamps(tens, model)
+            width = 16
             if(len(time_stamps)>0):
                 print("#***silero VAD has detected a possible speech")
-                result = whisperModel.transcribe(audio, language="fr")
-                print(result["text"])
+                wave_file_path = "output.wav"
+                #save_audio('d:\only_speech.wav',tens, sampling_rate=DEFAULT_SAMPLE_RATE) 
+                
+                print(f"Audio file saved to {wave_file_path}")
+                #result = whisperModel.transcribe(audio, language="fr")
+                #print(result["text"])
             else:
                 print("***silero VAD has detected a noise")
             print()
             wav_data = bytearray()
 
+
+def offline():
+    audio_path = "input.mp3"  # @param {type:"string"}
+    model_size = "medium"  # @param ["medium", "large"]
+    language = "french"  # @param {type:"string"}
+    translation_mode = "No translation"  # @param ["End-to-end Whisper (default)", "Whisper -> DeepL", "No translation"]
+    # @markdown Advanced settings:
+    deepl_authkey = ""  # @param {type:"string"}
+    source_separation = False  # @param {type:"boolean"}
+    vad_threshold = 0.4  # @param {type:"number"}
+    chunk_threshold = 10  # @param {type:"number"}
+    deepl_target_lang = "EN-US"  # @param {type:"string"}
+    max_attempts = 1  # @param {type:"integer"}
+    initial_prompt = ""  # @param {type:"string"}
+    
+    
+    print("Running VAD...")
+    model, utils = torch.hub.load(
+        repo_or_dir="snakers4/silero-vad", model="silero_vad", onnx=False
+    )
+
+    (get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
+    torchaudio.set_audio_backend("soundfile")
+    
+    # Generate VAD timestamps
+    VAD_SR = 16000
+    wav = read_audio("audio_2.mp3", sampling_rate=VAD_SR)
+    t = get_speech_timestamps(wav, model, sampling_rate=VAD_SR, threshold=vad_threshold)
+
+    
+    # Add a bit of padding, and remove small gaps
+    for i in range(len(t)):
+        t[i]["start"] = max(0, t[i]["start"] - 3200)  # 0.2s head
+        t[i]["end"] = min(wav.shape[0] - 16, t[i]["end"] + 20800)  # 1.3s tail
+        if i > 0 and t[i]["start"] < t[i - 1]["end"]:
+            t[i]["start"] = t[i - 1]["end"]  # Remove overlap
+    
+    # If breaks are longer than chunk_threshold seconds, split into a new audio file
+    # This'll effectively turn long transcriptions into many shorter ones
+    u = [[]]
+    for i in range(len(t)):
+        if i > 0 and t[i]["start"] > t[i - 1]["end"] + (chunk_threshold * VAD_SR):
+            u.append([])
+        u[-1].append(t[i])
+
+    
+    # Merge speech chunks
+    for i in range(len(u)):
+        save_audio(
+            "vad_chunks/" + str(i) + ".wav",
+            collect_chunks(u[i], wav),
+            sampling_rate=VAD_SR,
+        )
+        
+   
+    # Convert timestamps to seconds
+    for i in range(len(u)):
+        time = 0.0
+        offset = 0.0
+        for j in range(len(u[i])):
+            u[i][j]["start"] /= VAD_SR
+            u[i][j]["end"] /= VAD_SR
+            u[i][j]["chunk_start"] = time
+            time += u[i][j]["end"] - u[i][j]["start"]
+            u[i][j]["chunk_end"] = time
+            if j == 0:
+                offset += u[i][j]["start"]
+            else:
+                offset += u[i][j]["start"] - u[i][j - 1]["end"]
+            u[i][j]["offset"] = offset
+    
+            
+    print("timestamps in seconds")
+    print(u)
+
+    ##upload to API for transcription
+    print("calling the API for transcription")
+    url = "http://localhost:30000/uploadfile"  
+    file_path = "vad_chunks/0.wav"  # Replace with the path to the file you want to upload
+
+    with open(file_path, "rb") as file:
+        files = {'fileUpload': (file_path, file, 'audio/wav')}
+        response = requests.post(url, files=files)
+
+    print("Response Code:", response.status_code)
+    print("Response Content:", response.json())    
 
 if __name__ == '__main__':
     DEFAULT_SAMPLE_RATE = 16000
@@ -194,4 +300,5 @@ if __name__ == '__main__':
                         help=" minimum silence duration in samples between to separate speech chunks")
     ARGS = parser.parse_args()
     ARGS.rate=DEFAULT_SAMPLE_RATE
-    main(ARGS)
+    #online(ARGS)
+    offline()
