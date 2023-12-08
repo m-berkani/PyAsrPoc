@@ -194,7 +194,7 @@ def offline():
     
     # Generate VAD timestamps
     VAD_SR = 16000
-    wav = read_audio("audio_2.mp3", sampling_rate=VAD_SR)
+    wav = read_audio("3.mp3", sampling_rate=VAD_SR)
     t = get_speech_timestamps(wav, model, sampling_rate=VAD_SR, threshold=vad_threshold)
 
     
