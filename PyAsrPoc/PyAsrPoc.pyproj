@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>2c622cda-6b57-46ce-88de-c07e1369eea0</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>PyAsrPoc.py</StartupFile>
+    <StartupFile>class2.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,6 +21,8 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="class1.py" />
+    <Compile Include="class2.py" />
     <Compile Include="PyAsrPoc.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
