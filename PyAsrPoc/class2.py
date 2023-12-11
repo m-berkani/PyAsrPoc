@@ -19,15 +19,8 @@ def transcribe(stream, new_chunk):
     global file_count
     global text
     sr, y = new_chunk
-    #y = y.astype(np.float32)
-    #y /= np.max(np.abs(y))
-
     audio_float32 = int2float(y)
     confidence = model(torch.from_numpy(audio_float32), sr).item()
-    # if(is_speech):
-    #     text1 = 'yes'
-    # else : 
-    #     text1 = 'no'
     if confidence> 0.5:
         if stream is not None :
             stream = np.concatenate([stream, audio_float32])
@@ -37,21 +30,19 @@ def transcribe(stream, new_chunk):
         if (stream is not None):
             tensor = torch.tensor(stream )
             save_audio(str(file_count)+".wav",tensor,sr)
-            transcribe_api(stream)
+            transcribe_api(str(file_count)+".wav")
             stream=None
             file_count=file_count+1
-            
-    return stream, confidence#8T8T8952({"sampling_rate": sr, "raw": stream})["text"]°3 06 °8790I?V  B.GLIHDVVSQVBNL/NTNG?NXS?CS.S.S.
+    return stream, confidence
 
-def transcribe_api(stream):
-    url = "http://localhost:30000/uploadfile"
+def transcribe_api(file_path):
+    url = "http://65.21.200.122:30000/uploadfile/"
     
-    # Convert NumPy array to a list (JSON serializable)
-    array_as_list = stream.tolist()
-
-    # Convert the list to a JSON string
-    json_data = json.dumps({"data": array_as_list})
-    response = requests.post(url, json=json_data)
+    with open(file_path, "rb") as file:
+        files = {'fileUpload': (file_path, file, 'audio/wav')}
+        response = requests.post(url, files=files)
+    
+    print(response.json())
     return response.json()
 
 
