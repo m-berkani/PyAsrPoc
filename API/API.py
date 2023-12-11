@@ -1,11 +1,16 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from aiofiles import open as async_open
 import whisper
+from typing import List
 from whisper.tokenizer import LANGUAGES
-from typing import Optional
+from typing import Any, Optional
 import uvicorn
 import numpy as np
 import db_config as db
+from pydantic import BaseModel
+    
+class ArrayInput(BaseModel):
+    data: List[List[float]]
 
 app = FastAPI()
 
@@ -14,12 +19,27 @@ async def root():
     return {"message": "Hello World"}
 
 #Upload a file and return filename as reponse
-@app.post("/uploadfile")
-async def uploadfile(leftContext: UploadFile = File(...),wavfile: UploadFile = File(...), ExamTypeName:str= Form(...)):
+@app.post("/uploadfile3/")
+async def uploadfile3(arr_input: ArrayInput):
+    numpy_array = np.array(arr_input.data)
     # call whisper endpoint
-    vocabs=await db.get_Vocabs(ExamTypeName)
-    model_size = "small"
-    whisperModel = whisper.load_model(model_size)
+    # vocabs=await db.get_Vocabs(ExamTypeName)
+    # model_size = "small"
+    # whisperModel = whisper.load_model(model_size)
+    # date  = fileUpload.file.read()
+    # audio_int16 = np.frombuffer(date, np.int16);
+    # audio_float32 = int2float(audio_int16)
+    # result = whisperModel.transcribe(audio_float32)
+    # print(result)
+    return {"received_array": numpy_array.tolist()}
+
+
+#Upload a file and return filename as reponse
+@app.post("/uploadfile")
+async def uploadfile(fileUpload: UploadFile = File(...)):
+    # call whisper endpoint
+    ##vocabs=await db.get_Vocabs(ExamTypeName)
+    global whisperModel
     date  = fileUpload.file.read()
     audio_int16 = np.frombuffer(date, np.int16);
     audio_float32 = int2float(audio_int16)
@@ -44,4 +64,6 @@ def int2float(sound):
     return sound
 
 if __name__ == "__main__":
+    model_size = "tiny"
+    whisperModel = whisper.load_model(model_size)
     uvicorn.run(app, host="0.0.0.0", port=30000)

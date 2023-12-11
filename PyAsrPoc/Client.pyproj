@@ -5,7 +5,7 @@
     <ProjectGuid>2c622cda-6b57-46ce-88de-c07e1369eea0</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>Client.py</StartupFile>
+    <StartupFile>class3.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="class1.py" />
     <Compile Include="class2.py" />
+    <Compile Include="class3.py" />
     <Compile Include="Client.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
