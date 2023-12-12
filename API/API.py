@@ -64,6 +64,6 @@ def int2float(sound):
     return sound
 
 if __name__ == "__main__":
-    model_size = "tiny"
+    model_size = "small"
     whisperModel = whisper.load_model(model_size)
     uvicorn.run(app, host="0.0.0.0", port=30000)
