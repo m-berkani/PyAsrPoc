@@ -48,6 +48,21 @@ async def uploadfile(fileUpload: UploadFile = File(...)):
     return {"transcription": result["text"],
         "Status": "200 ok"}
 
+#Upload a file and return filename as reponse
+# @app.post("/uploadfile2")
+# async def uploadfile2(leftContext: UploadFile = File(...),wavfile: UploadFile = File(...), ExamTypeName:str= Form(...)):
+#     # call whisper endpoint
+#     vocabs=await db.get_Vocabs(ExamTypeName)
+#     model_size = "small"
+#     whisperModel = whisper.load_model(model_size)
+#     date  = fileUpload.file.read()
+#     audio_int16 = np.frombuffer(date, np.int16);
+#     audio_float32 = int2float(audio_int16)
+#     result = whisperModel.transcribe(audio_float32)
+#     print(result)
+#     return {"transcription": result["text"],
+#         "Status": "200 ok"}
+
 
 @app.get("/getExamType/")
 async def getExamType():

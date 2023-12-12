@@ -5,7 +5,7 @@
     <ProjectGuid>2c622cda-6b57-46ce-88de-c07e1369eea0</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>class3.py</StartupFile>
+    <StartupFile>class2.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
