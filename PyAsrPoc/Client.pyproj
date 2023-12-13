@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="class1.py" />
     <Compile Include="class2.py" />
+    <Compile Include="class3.py" />
     <Compile Include="Client.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

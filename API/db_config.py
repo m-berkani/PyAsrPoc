@@ -36,7 +36,7 @@ async def get_Vocabs(ExamTypeName:str):
       Trust_Connection=yes;
     """
     connexion=odbc.connect(connection_string)
-    query = ("SELECT CustomeVocabulary FROM Exam_Type WHERE examTypeName=ExamTypeName ")
+    query = ("SELECT top 1 CustomeVocabulary FROM Exam_Type WHERE examTypeName='"+ExamTypeName+"'" )
     data = pd.read_sql(query, connexion)
     connexion.close()
     Vocabs = data.to_json(orient="values")

@@ -52,10 +52,9 @@ demo = gr.Interface(
     save_and_transcribe,
     [
         "state",
-        gr.Audio(sources=["microphone"], streaming=True),
-        gr.Dropdown(["client 1", "client 2", "client 3"], label="Client", info="Client ID"),
-        gr.Dropdown(choices=exam_types, label="Exam Type", info="Select exam type"),
         gr.Dropdown(["tiny", "base", "small", "medium", "large", "large-v1", "large-v2", "large-v3"], label="Model", info="Select an option"),
+        gr.Dropdown(choices=exam_types, label="Exam Type", info="Select exam type"),
+        gr.Audio(sources=["microphone"], streaming=True),
         gr.File(label="Upload File", type="binary"),  # Use 'binary' instead of 'audio/*'
         gr.Button("Submit"),
     ],
