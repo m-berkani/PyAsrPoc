@@ -1,0 +1,2 @@
+stream,new_chunk,Upload File,stream,output 1,flag,username,timestamp
+,"{""path"":""flagged\\new_chunk\\a5e5186e0220a7a1ea2a\\audio.wav"",""url"":""http://127.0.0.1:7860/stream/C:\\Users\\Mohamed\\AppData\\Local\\Temp\\gradio\\19f2d8b3e9d20187deec2895bd2a0d4e10b4b5f0\\audio.wav"",""size"":48044,""orig_name"":""audio.wav"",""mime_type"":""""}",,,"{'transcription': ' The The The The The The The The The The The The The The', 'Status': '200 ok'}",,,2023-12-13 07:32:05.726081
